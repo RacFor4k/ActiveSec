@@ -10,6 +10,7 @@ def predict_file(data, model):
         X = torch.tensor(data, dtype=torch.float32).unsqueeze(0).unsqueeze(0)
         outputs = model(X.to(device))
         ratio = torch.argmax(outputs, 1)
+        print(outputs)
         if ratio == 1:
             return '1'
         else:
@@ -39,7 +40,8 @@ if __name__ == "__main__":
     while True:
         data = conn.recv(256)
         if not data:
+            print('not data')
             break
-        conn.send(predict_file(data, model).encode())
+        conn.send(predict_file(list(data), model).encode())
 
     conn.close()

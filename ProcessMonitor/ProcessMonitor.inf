@@ -1,0 +1,62 @@
+;
+; ProcessMonitor.inf
+;
+
+[Version]
+Signature   = "$WINDOWS NT$"
+Class       = System ; TODO: specify appropriate Class
+ClassGuid   = {4d36e97d-e325-11ce-bfc1-08002be10318} ; TODO: specify appropriate ClassGuid
+Provider    = %ManufacturerName%
+CatalogFile = ProcessMonitor.cat
+DriverVer   = ; TODO: set DriverVer in stampinf property pages
+PnpLockdown = 1
+
+[DestinationDirs]
+DefaultDestDir = 13
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+ProcessMonitor.sys = 1,,
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName% = Standard,NT$ARCH$.10.0...16299 ; %13% support introduced in build 16299
+
+[Standard.NT$ARCH$.10.0...16299]
+%ProcessMonitor.DeviceDesc% = ProcessMonitor_Device, Root\ProcessMonitor ; TODO: edit hw-id
+
+[ProcessMonitor_Device.NT]
+CopyFiles = File_Copy
+
+[File_Copy]
+ProcessMonitor.sys
+
+;-------------- Service installation
+[ProcessMonitor_Device.NT.Services]
+AddService = ProcessMonitor,%SPSVCINST_ASSOCSERVICE%, ProcessMonitor_Service_Inst
+
+; -------------- ProcessMonitor driver install sections
+[ProcessMonitor_Service_Inst]
+DisplayName    = %ProcessMonitor.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %13%\ProcessMonitor.sys
+
+[ProcessMonitor_Device.NT.Wdf]
+KmdfService = ProcessMonitor, ProcessMonitor_wdfsect
+
+[ProcessMonitor_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE = 0x00000002
+ManufacturerName = "<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+DiskName = "ProcessMonitor Installation Disk"
+ProcessMonitor.DeviceDesc = "ProcessMonitor Device"
+ProcessMonitor.SVCDESC = "ProcessMonitor Service"

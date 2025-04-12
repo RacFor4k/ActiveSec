@@ -133,11 +133,13 @@
   <ItemGroup>
     <ClCompile Include="ActiveSec.cpp" />
     <ClCompile Include="CryptoAI.cpp" />
+    <ClCompile Include="Tester.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Callbacks.h" />
     <ClInclude Include="CryptoAI.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
