@@ -24,6 +24,7 @@ namespace NN {
 		~CryptoAI();
 
 	private:
+		int age;
 		const std::string path;
 		WSADATA wsData;
 		SOCKET sock;

@@ -40,7 +40,7 @@ bool NN::CryptoAI::check(const char* bytes)
 	char* buff = new char[1];
 	recv(sock, buff, 1, 0);
 	bool res = bool(buff[0] - '0');
-	delete buff;
+	delete[] buff;
 	return res;
 }
 

@@ -132,6 +132,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ActiveSec.cpp" />
+    <ClCompile Include="Callbacks.cpp" />
     <ClCompile Include="CryptoAI.cpp" />
     <ClCompile Include="Tester.cpp" />
   </ItemGroup>
