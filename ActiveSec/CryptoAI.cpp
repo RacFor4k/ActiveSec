@@ -6,7 +6,7 @@ NN::CryptoAI::CryptoAI(const char* path)
 	script_path += path;
 	script_path += "detect.py ";
 	script_path += path;
-	script_path += "model__37.pth";
+	script_path += "model.pth";
 
 	AI_th = std::thread(system, script_path.c_str());
 
