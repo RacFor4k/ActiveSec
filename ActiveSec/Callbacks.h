@@ -54,8 +54,9 @@ namespace MiniFilter {
 	);
 
 
-	//Обзаботка запросов на запись
-	FLT_PREOP_CALLBACK_STATUS MyPreWriteCallback(
+
+	//Обзаботка запросов на записать
+	FLT_PREOP_CALLBACK_STATUS PreWriteCallback(
 		PFLT_CALLBACK_DATA Data,
 		PCFLT_RELATED_OBJECTS FltObjects,
 		PVOID* CompletionContext

@@ -19,7 +19,7 @@ bool replace(std::string& str, const std::string& from, const std::string& to) {
 
 int main() {
 	srand(time(0));
-	NN::CryptoAI crypto;
+	NN::CryptoAI crypto("utfdtrd5ufi");
 	char* b = new char[256];
 	while (1) {
 		string a;
