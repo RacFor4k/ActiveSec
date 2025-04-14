@@ -1,5 +1,29 @@
 #include "Callbacks.h"
 
+unsigned char* MiniFilter::AdjustBuffer(PVOID buffer, ULONG bufferLength, ULONG offset)
+{
+	const ULONG MAX_LENGTH = 256;
+
+	// Приводим буфер к char* для удобства работы с памятью
+	unsigned char* byteBuffer = (unsigned char*)buffer;
+
+	// Если буфер длиной меньше 256 байт
+	if (bufferLength < MAX_LENGTH) {
+		// Дополняем буфер нулями до 256 байт, начиная с конца буфера
+		std::memset(byteBuffer + bufferLength, 0, MAX_LENGTH - bufferLength);
+		return byteBuffer;
+	}
+	if (bufferLength == MAX_LENGTH) {
+		return byteBuffer;
+	}
+	if (bufferLength > MAX_LENGTH) {
+		byteBuffer = new unsigned char[MAX_LENGTH];
+		offset = max(offset, bufferLength - 256);
+		std::memcpy(byteBuffer, (unsigned char*)buffer + offset, MAX_LENGTH);
+
+	}
+}
+
 FLT_PREOP_CALLBACK_STATUS MiniFilter::PreReadCallback(PFLT_CALLBACK_DATA Data, PCFLT_RELATED_OBJECTS FltObjects, PVOID* CompletionContext)
 {
 
@@ -18,7 +42,7 @@ FLT_PREOP_CALLBACK_STATUS MiniFilter::PreWriteCallback(PFLT_CALLBACK_DATA Data, 
 
 	//Получение процесса который пытается получить доступ к файлу
 	PEPROCESS process = PsGetCurrentProcess();
-	HANDLE pid = PsGetProcessId(process);
+	ULONG pid = reinterpret_cast<ULONG>(PsGetProcessId(process));
 
 	//Поиск процесса в списке отслеживаемых процессов 
 	auto target = std::find_if(targetProcesses.begin(), targetProcesses.end(), [pid](TargetProcess a) {return a.pid == pid; });
