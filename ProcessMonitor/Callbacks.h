@@ -1,14 +1,11 @@
 #pragma once
-#include <vector>
-#include <set>
 #include <ctime>
-#include <algorithm>
 #include "..\ActiveSec\CryptoAI.h"
 #include <fltKernel.h>
+#include "dynamic.h"
+#include "cutils.h"
 
 namespace MiniFilter {
-
-	unsigned char* AdjustBuffer(PVOID buffer, ULONG bufferLength, ULONG offset);
 
 	const UINT16 gLookingTime = 10 * 60; //наблидение за процессом до 10 минут
 
@@ -16,12 +13,12 @@ namespace MiniFilter {
 
 	struct TargetProcess
 	{
-		ULONG pid;
-		ULONG additionTime;
+		HANDLE  pid;
+		ULONGLONG additionTime;
 		BOOLEAN isBlocked = FALSE;
 	};
 
-	static std::vector<TargetProcess> targetProcesses; //процессы которые необходимо отслеживать
+	static list<TargetProcess> targetProcesses; //процессы которые необходимо отслеживать
 
 
 
@@ -43,3 +40,9 @@ namespace MiniFilter {
 
 
 }
+
+VOID CreateProcessNotifyRoutineEx(
+	_Inout_ PEPROCESS Process,
+	_In_ HANDLE ProcessId,
+	_In_opt_ PPS_CREATE_NOTIFY_INFO CreateInfo
+);

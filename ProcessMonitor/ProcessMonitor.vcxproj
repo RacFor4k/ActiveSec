@@ -114,7 +114,17 @@
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Callbacks.cpp" />
+    <ClCompile Include="cutils.cpp" />
+    <ClCompile Include="dynamic.cpp" />
+    <ClCompile Include="hash.cpp" />
     <ClCompile Include="Main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Callbacks.h" />
+    <ClInclude Include="cutils.h" />
+    <ClInclude Include="dynamic.h" />
+    <ClInclude Include="hash.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
