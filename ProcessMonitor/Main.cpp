@@ -10,7 +10,7 @@ PFLT_FILTER gFilterHandle = NULL;
 
 FLT_OPERATION_REGISTRATION Callbacks[] = {
     { IRP_MJ_READ, 0, MiniFilter::PreReadCallback, nullptr },
-    {   IRP_MJ_WRITE, 0, MiniFilter::PreWriteCallback, nullptr },
+    { IRP_MJ_WRITE, 0, MiniFilter::PreWriteCallback, nullptr },
     { IRP_MJ_OPERATION_END }
 };
 
@@ -35,7 +35,7 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) 
 
     NTSTATUS status;
 
-    status = PsSetCreateProcessNotifyRoutineEx()
+    status = PsSetCreateProcessNotifyRoutineEx(CreateProcessNotifyRoutineEx, FALSE);
 
     status = FltRegisterFilter(DriverObject, &FilterRegistration, &gFilterHandle);
     if (!NT_SUCCESS(status)) {
@@ -53,7 +53,8 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) 
 NTSTATUS MiniFilterUnload(_In_ FLT_FILTER_UNLOAD_FLAGS Flags)
 {
     UNREFERENCED_PARAMETER(Flags);
-
+    
+    PsSetCreateProcessNotifyRoutineEx(CreateProcessNotifyRoutineEx, TRUE);
     FltUnregisterFilter(gFilterHandle);
     return STATUS_SUCCESS;
 }

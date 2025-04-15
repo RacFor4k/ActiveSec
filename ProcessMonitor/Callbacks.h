@@ -1,6 +1,6 @@
 #pragma once
-#include <ctime>
-#include "..\ActiveSec\CryptoAI.h"
+#include <ntddk.h>
+#include <wdf.h>
 #include <fltKernel.h>
 #include "dynamic.h"
 #include "cutils.h"
@@ -8,8 +8,6 @@
 namespace MiniFilter {
 
 	const UINT16 gLookingTime = 10 * 60; //наблидение за процессом до 10 минут
-
-	static NN::CryptoAI cryptoAI;
 
 	struct TargetProcess
 	{

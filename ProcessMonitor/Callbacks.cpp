@@ -19,17 +19,22 @@ FLT_PREOP_CALLBACK_STATUS MiniFilter::PreWriteCallback(PFLT_CALLBACK_DATA Data, 
 	UNREFERENCED_PARAMETER(CompletionContext);
 
 	//Получение процесса который пытается получить доступ к файлу
-	PEPROCESS process = PsGetCurrentProcess();
-	ULONG pid = reinterpret_cast<ULONG>(PsGetProcessId(process));
+	HANDLE pid = PsGetProcessId(PsGetCurrentProcess());
 
 	//Поиск процесса в списке отслеживаемых процессов 
-	auto target = std::find_if(targetProcesses.begin(), targetProcesses.end(), [pid](TargetProcess a) {return a.pid == pid; });
+	size_t i;
+	for (i = 0; i < targetProcesses.size(); i++) {
+		if (targetProcesses[i].pid == pid)
+			break;
+		else if (i == targetProcesses.size() - 1)
+			i = targetProcesses.size();
+	}
 
-	if (target == targetProcesses.end()) {
+	if (i == targetProcesses.size()) {
 		return FLT_PREOP_SUCCESS_NO_CALLBACK;
 	}
-	if ((*target).additionTime + gLookingTime <= time(0)) {
-		targetProcesses.erase(target);
+	if (targetProcesses[i].additionTime + gLookingTime <= cutils::GetSystemTimeSeconds()) {
+		targetProcesses.remove(i);
 		return FLT_PREOP_SUCCESS_NO_CALLBACK;
 	}
 
@@ -37,11 +42,11 @@ FLT_PREOP_CALLBACK_STATUS MiniFilter::PreWriteCallback(PFLT_CALLBACK_DATA Data, 
 	ULONG lenght = Data->Iopb->Parameters.Write.Length;
 
 	for (int i = 0; i < (lenght + 255) / 256; i++) {
-		unsigned char* adjBuff = AdjustBuffer(buffer, lenght, 256 * (lenght / 256));
-		if (cryptoAI.check(adjBuff)) {
-			//Процесс пишет шифрованные данные, нужно что-то делать
-			return FLT_PREOP_COMPLETE; //блокируется попытка записи
-		}
+		unsigned char* adjBuff = cutils::AdjustBuffer(buffer, lenght, 256 * (lenght / 256));
+		//if (cryptoAI.check(adjBuff)) {
+		//	//Процесс пишет шифрованные данные, нужно что-то делать
+		//	return FLT_PREOP_COMPLETE; //блокируется попытка записи
+		//}
 	}
 	return FLT_PREOP_SUCCESS_NO_CALLBACK; //если признаки шифрования не найдены, пропускаем запрос на запись
 }
@@ -52,9 +57,14 @@ VOID CreateProcessNotifyRoutineEx(PEPROCESS Process, HANDLE ProcessId, PPS_CREAT
 	if (CreateInfo) {
 		MiniFilter::targetProcesses.append({ ProcessId, cutils::GetSystemTimeSeconds(), FALSE });
 	}
-
-	//Процесс закрыт
 	else {
-		MiniFilter
+		size_t i;
+		for (i = 0; i < MiniFilter::targetProcesses.size(); i++) {
+			if (MiniFilter::targetProcesses[i].pid == ProcessId)
+				break;
+			else if (i == MiniFilter::targetProcesses.size() - 1)
+				i = MiniFilter::targetProcesses.size();
+		}
+		MiniFilter::targetProcesses.remove(i);
 	}
 }
