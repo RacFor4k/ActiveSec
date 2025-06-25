@@ -21,6 +21,8 @@ class BaseTransformer(nn.Module):
         
         self.decoder = nn.Linear(d_model, classes)
         
+        
+        #In: [Batch_size, Seq_len] Out: [Batch_size, num_classes]
     def forward(self, x):
         x = self.embedding(x)
         x = self.pos_encoder(x)
@@ -32,7 +34,4 @@ class BaseTransformer(nn.Module):
         x = self.decoder(x)
         return torch.sigmoid(x)
     
-    
-        
-        
-        
+  
