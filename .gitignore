@@ -398,4 +398,9 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# AI models
 *.pth
+
+#RSA keys
+*.pem

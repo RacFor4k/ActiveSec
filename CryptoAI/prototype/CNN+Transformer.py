@@ -133,7 +133,7 @@ class NN(nn.Module):
         # сжатие свертки в глубину с (B, S, emb_dim*4) в (B, S)
         self.pooling = NN.AttentionPool(emb_dim * 4, dropout)
         self.relu = nn.ReLU()
-
+        
         # поиск глобальных зависимостей и конечная классификация
         self.transformer = NN.Transforemer(
             hidden_size=hidden_size,
