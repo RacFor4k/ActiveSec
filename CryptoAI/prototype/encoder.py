@@ -45,6 +45,7 @@ if __name__ == "__main__":
         chunk = f.read(512)
         while len(chunk) != 0:
             encoded += encryptor.update(chunk)
+            chunk = f.read(512)
         encoded += encryptor.finalize()
     
     with open(file_out[0], 'wb') as f:
@@ -63,6 +64,7 @@ if __name__ == "__main__":
         chunk = f.read(512)
         while len(chunk) != 0:
             encoded += encryptor.update(chunk)
+            chunk = f.read(512)
         encoded += encryptor.finalize()
     
     with open(file_out[0], 'wb') as f:
