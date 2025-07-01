@@ -404,3 +404,6 @@ FodyWeavers.xsd
 
 #RSA keys
 *.pem
+
+#ignore dataset
+prepared/**

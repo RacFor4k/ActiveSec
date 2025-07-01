@@ -54,6 +54,7 @@ if __name__ == "__main__":
         f.write(encoded)
     
     
+    encoded = bytes()
     encryptor = Cipher(
         algorithms.ChaCha20(key, nonce),
         None,
@@ -67,7 +68,7 @@ if __name__ == "__main__":
             chunk = f.read(512)
         encoded += encryptor.finalize()
     
-    with open(file_out[0], 'wb') as f:
+    with open(file_out[1], 'wb') as f:
         f.write(nonce)
         f.write(encoded_key)
         f.write(encoded)

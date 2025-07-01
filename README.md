@@ -6,6 +6,7 @@
 ![Status](https://img.shields.io/badge/status-prototype-orange)
 
 ## 🧩 Общая идея проекта
+
 CryptoAI — это один из модулей большого проекта, предназначенный для обучения нейросети различать бинарные данные: **зашифрованные** или **незашифрованные**.
 
 ## 🧠 Архитектура нейросети
@@ -48,9 +49,9 @@ python encoder.py input_file output_AES_file;output_ChaCha20_file
 
 Подготавливает датасет: обрезает файлы, шифрует и раскладывает в папки:
 
-* `prepared/normal/`
-* `prepared/AES/`
-* `prepared/ChaCha20/`
+- `prepared/normal/`
+- `prepared/AES/`
+- `prepared/ChaCha20/`
 
 ```bash
 python prepare_dataset.py путь_до_папки
