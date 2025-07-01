@@ -401,9 +401,11 @@ FodyWeavers.xsd
 
 # AI models
 *.pth
+!model.pth
 
 #RSA keys
 *.pem
 
 #ignore dataset
 prepared/**
+prepared

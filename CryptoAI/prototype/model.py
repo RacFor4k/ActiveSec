@@ -60,18 +60,15 @@ class NN(nn.Module):
                 nn.Tanh(),
                 nn.Linear(d_model // 2, 1)
             )
-            self.norm = nn.LayerNorm(d_model)
             self.dropout = nn.Dropout(dropout)
 
         def forward(self, x, mask=None):
             attn_scores = self.attention(x).squeeze(-1)  # [B, S]
-
             if mask is not None:
                 attn_scores = attn_scores.masked_fill(mask, float('-inf'))
 
             attn_weights = torch.softmax(attn_scores, dim=1).unsqueeze(-1)  # [B, S, 1]
             pooled = torch.sum(attn_weights * x, dim=1)  # [B, H]
-            pooled = self.norm(pooled)
             pooled = self.dropout(pooled)
             return pooled
 
@@ -86,7 +83,7 @@ class NN(nn.Module):
                 d_model=hidden_size,
                 nhead=nhead,
                 dropout=dropout,
-                batch_first=False  # PyTorch default
+                batch_first=True  # PyTorch default
             )
             self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
             self.pool = NN.AttentionPool(hidden_size, dropout=dropout)
@@ -104,9 +101,7 @@ class NN(nn.Module):
             if mask is None:
                 mask = self.get_mask(x)
             x = self.time_emb(x)               # [B, S, H]
-            x = x.transpose(0, 1)              # [S, B, H]
             x = self.encoder(x, src_key_padding_mask=mask)
-            x = x.transpose(0, 1)              # [B, S, H]
             x = self.pool(x, mask=mask)        # [B, H]
             x = self.norm(x)
             x = self.dropout(x)
@@ -135,7 +130,7 @@ class NN(nn.Module):
         
         # поиск глобальных зависимостей и конечная классификация
         self.transformer = NN.Transforemer(
-            hidden_size=hidden_size,
+            hidden_size=emb_dim * 4,
             nhead=nhead,
             num_layers=ts_layers,
             max_len=max_len // 2,
@@ -143,9 +138,8 @@ class NN(nn.Module):
         )
 
     def forward(self, x):
-        x = self.emb(x)        # [B, S, emb_dim]
+        x = self.emb(x)        # [B, S, emb_dim]        
         x = self.conv(x)       # [B, S//2, emb_dim*4]
-        x = self.pooling(x)    # [B, emb_dim*4]
-        x = self.relu(x)
         x = self.transformer(x)  # [B, 1]
+        x = x.view(-1) # [B]
         return x
