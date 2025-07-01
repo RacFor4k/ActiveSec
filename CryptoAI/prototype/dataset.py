@@ -9,6 +9,7 @@ class CAIDataset(Dataset):
     BASE_PATH = 'prepared'
     TYPES = ('normal, ChaCha20, AES')
     RAND = random.Random()
+    PASS_SAPMLES = 0 #количество пропущенных файл к 1 прочитаному   (5000%PASS_SAMPLE+1 == 0)
     
     def __init__(self, max_len = 512, rand_offset = False, offset = 0, dtype = torch.float32):
         self.max_len = max_len
