@@ -3,7 +3,8 @@ from torch.utils.data import Dataset
 import os
 import random
 
-class CustomDataset(Dataset):
+#CAI - CryptoAI
+class CAIDataset(Dataset):
     
     BASE_PATH = 'prepared'
     TYPES = ('normal, ChaCha20, AES')

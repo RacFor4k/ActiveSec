@@ -98,7 +98,6 @@ class NN(nn.Module):
                 nn.ReLU(),
                 nn.Dropout(dropout),
                 nn.Linear(hidden_size // 2, 1),
-                nn.Sigmoid()
             )
 
         def forward(self, x, mask=None):
