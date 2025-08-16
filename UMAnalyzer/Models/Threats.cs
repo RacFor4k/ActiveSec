@@ -16,7 +16,7 @@ namespace UMAnalyzer.Models.Threads
         {
             return pid.CompareTo(other.pid);
         }
-
+         
     }
 
     internal struct Proccess : IComparable<Proccess>, IEquatable<Proccess>
