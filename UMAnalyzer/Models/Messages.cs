@@ -24,8 +24,8 @@ namespace UMAnalyzer.Models
     [StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Unicode)]
     public unsafe struct KM_Message
     {
-        public ulong Pid;
         public uint Type;
+        public fixed char ProcessPath[260]; // inline WCHAR[260]
         public fixed char FilePath[260]; // inline WCHAR[260]
         public uint Offset;
         public uint BufferLength;
