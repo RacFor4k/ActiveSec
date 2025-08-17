@@ -1,4 +1,4 @@
-# active_sec_full_description
+# ReadMe
 
 # ActiveSec
 
@@ -30,15 +30,15 @@
 Отвечает за отправку и приём логов:
 
 - Отправка логов в виде структуры **KM_MESSAGE**:
-    - `Type (ULONG)` - тип действия (0 - create, 1 - read, 2 - write)
-    - `ProcessPath (WCHAR[256])` - путь к исполняемому файлу
-    - `FilePath (WCHAR[260])` - путь к файлу
-    - `Offset (ULONG)` - смещение для чтения/записи
-    - `BufferLength (ULONG)` - реальная длина буфера (<= MAX_LOG_BUFFER_LEN)
-    - `Buffer (CHAR[MAX_LOG_BUFFER_LEN])` - данные
+    - `Type (ulong)` - тип действия (0 - create, 1 - read, 2 - write)
+    - `ProcessPath (wchar[256])` - путь к исполняемому файлу
+    - `FilePath (wchar[260])` - путь к файлу
+    - `Offset (ulong)` - смещение для чтения/записи
+    - `BufferLength (ulong)` - реальная длина буфера (<= MAX_LOG_BUFFER_LEN)
+    - `Buffer (char[MAX_LOG_BUFFER_LEN])` - данные
 - Асинхронный приём сообщений от UMAnalizer в виде структуры **UM_MESSAGE**:
-    - `ProcessPath (WCHAR[256])` - путь к исполняемому файлу
-    - `Type (ULONG)` - 0 (добавить PID в blockedpid), 1 (удалить PID из blockedpid)
+    - `ProcessPath (wchar[256])` - путь к исполняемому файлу
+    - `Type (ulong)` - 0 (добавить PID в blockedpid), 1 (удалить PID из blockedpid)
 
 ### 4. blockedpid
 
@@ -65,12 +65,38 @@
 
 ### 3. BlackList
 
-Модуль отвечает за хранение всех видов подозрительных данных в виде `Threats` и `Processes`
+Модуль отвечает за хранение всех видов подозрительных данных в виде `Threats` и `Processes`. Threats и Processes хранятся в структуре типа HashSet.
 
 - `Threat` - структура для хранения заблокированных процессов:
     - `ProcessPath (WCHAR[256])` - путь к исполняемому файлу
     - Тип угрозы *(не реализовано)*
-- 
+- `Proccess` - структура для хранения информации о процессах:
+    - `_pid (ulong)` - идентификатор процесса
+    - `_distrust (double)` - уровень недоверия к процессу
+    - `Actions (List&lt;Action&gt;)` - список действий, выполненных процессом
+    - Методы:
+        - `GetPid()` - получить идентификатор процесса
+        - `AddAction(Action action)` - добавить действие и увеличить недоверие
+        - `GetDistrust()` - получить уровень недоверия
+        - `CompareTo(Proccess other)` - сравнить процессы по идентификатору
+        - `Equals(Proccess other)` - проверить равенство процессов
+- `Action` - структура для хранения действий процесса:
+    - `Type (ushort)` - тип действия
+    - `Distrust (float)` - уровень недоверия к действию
+    - `Path (string)` - путь к файлу
+    - Методы:
+        - `CompareTo(Action other)` - сравнить действия по уровню недоверия
+        - `Equals(Action other)` - проверить равенство действий
+
+Методы модуля:
+
+- `LoadThreads` - загрузка заблокированных угроз
+- `LoadProcesses` - загрузка данных о отслеживаемых процессах
+- `UpdateThreatsList` - добавление новой угрозы в файл
+- `UpdateProcessList` - добавление данных о процессе в файл
+- `GetProcess` - получение процесса из массива отслеживаемых
+- `AddProcess` - добавление нового процесса в отслеживаемые (сопровождается  `UpdateProcessList`)
+- `AddThreat` - добавление новой угрозы (сопровождается `UpdateThreatsList`)
 
 ### 4. CryptoAI
 
