@@ -7,13 +7,17 @@ using Windows.Devices.Usb;
 
 namespace UMAnalyzer.Models.Threads
 {
-    internal struct Threat : IComparable<Threat>
+    internal struct Threat : IComparable<Threat>, IEquatable<Threat>
     {
         public string ProcessPath;
 
         public int CompareTo(Threat other)
         {
             return ProcessPath.CompareTo(other.ProcessPath);
+        }
+        public bool Equals(Threat other)
+        {
+            return ProcessPath == other.ProcessPath;
         }
          
     }

@@ -11,7 +11,7 @@ namespace UMAnalyzer.Services
 {
     internal class BlackList
     {
-        private List<Threat> _ThreatList;
+        private HashSet<Threat> _ThreatList;
         private HashSet<Process> _ProcessesList = new HashSet<Process>();
         private void LoadThreats(string path)
         {
@@ -37,7 +37,7 @@ namespace UMAnalyzer.Services
 
         public BlackList()
         {
-            _ThreatList = new List<Threat>();
+            _ThreatList = new HashSet<Threat>();
             LoadThreats(ConstProvider.ThreatsPath);
         }
 
