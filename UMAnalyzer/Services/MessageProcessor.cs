@@ -10,11 +10,11 @@ namespace UMAnalyzer.Services
     /// Очередь для приёма и обработки сообщений.
     /// Если обработка предыдущего сообщения ещё не завершена — новые ждут в очереди.
     /// </summary>
-    public class MessageQueueProcessor
+    public class MessageProcessor
     {
         private readonly Channel<KM_Message> _channel;
 
-        public MessageQueueProcessor()
+        public MessageProcessor()
         {
             _channel = Channel.CreateUnbounded<KM_Message>(new UnboundedChannelOptions
             {

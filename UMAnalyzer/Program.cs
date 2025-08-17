@@ -25,8 +25,8 @@ namespace UMAnalyzer
                 e.Cancel = true;
             };
 
-            var portClient = new KernelPortClient();
-            var processor = new MessageQueueProcessor();
+            var portClient = new Communication();
+            var processor = new MessageProcessor();
 
             try
             {

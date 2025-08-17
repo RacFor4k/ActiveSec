@@ -7,7 +7,7 @@ using UMAnalyzer.Models;
 
 namespace UMAnalyzer.Services
 {
-    public class KernelPortClient : IDisposable
+    public class Communication : IDisposable
     {
         private const string PortName = ConstProvider.PortName; // "\\ActiveSec"
         private IntPtr _portHandle = IntPtr.Zero;

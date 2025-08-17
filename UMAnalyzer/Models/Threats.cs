@@ -9,12 +9,12 @@ namespace UMAnalyzer.Models.Threads
 {
     internal struct Threat : IComparable<Threat>
     {
-        public ulong pid;
+        public ulong Pid;
         public string Destination;
         
         public int CompareTo(Threat other)
         {
-            return pid.CompareTo(other.pid);
+            return Pid.CompareTo(other.Pid);
         }
          
     }
@@ -23,11 +23,11 @@ namespace UMAnalyzer.Models.Threads
     {
         private ulong _pid;
         private double _distrust;
-        public List<Action> actions { get; }
+        public List<Action> Actions { get; }
         public Proccess(ulong pid)
         {
             _pid = pid;
-            actions = new List<Action>();
+            Actions = new List<Action>();
         }
         public ulong GetPid()
         {
@@ -35,8 +35,8 @@ namespace UMAnalyzer.Models.Threads
         }
         public void AddAction(Action action)
         {
-            actions.Add(action);
-            _distrust += action.distrust;
+            Actions.Add(action);
+            _distrust += action.Distrust;
         }
         public double GetDistrust()
         {
@@ -54,16 +54,16 @@ namespace UMAnalyzer.Models.Threads
 
     internal struct Action : IComparable<Action>, IEquatable<Action>
     {
-        public ushort type;
-        public float distrust;
-        public string path;
+        public ushort Type;
+        public float Distrust;
+        public string Path;
         public int CompareTo(Action other)
         {
-            return distrust.CompareTo(other.distrust);
+            return Distrust.CompareTo(other.Distrust);
         }
         public bool Equals(Action other)
         {
-            return other.type == type && other.path == path;
+            return other.Type == Type && other.Path == Path;
         }
     }
 
