@@ -9,12 +9,11 @@ namespace UMAnalyzer.Models.Threads
 {
     internal struct Threat : IComparable<Threat>
     {
-        public ulong Pid;
-        public string Destination;
-        
+        public string ProcessPath;
+
         public int CompareTo(Threat other)
         {
-            return Pid.CompareTo(other.Pid);
+            return ProcessPath.CompareTo(other.ProcessPath);
         }
          
     }
