@@ -5,13 +5,8 @@
 
 #include "callbacks.h"
 #include "worker.h"
+#include <ntifs.h>
 
-//
-// Простая заглушка: ничего не делает и не требует post-op callback'а.
-// Возвращаем FLT_PREOP_SUCCESS_NO_CALLBACK.
-// В будущем можно переключаться на FLT_PREOP_SUCCESS_WITH_CALLBACK, 
-// если нужен post-op или асинхронная обработка.
-//
 FLT_PREOP_CALLBACK_STATUS
 PreCreateCallback(
     _Inout_ PFLT_CALLBACK_DATA Data,

@@ -33,18 +33,14 @@ namespace UMAnalyzer
                 await portClient.ConnectAsync(cts.Token);
                 Console.WriteLine("✅ Подключение к порту установлено");
 
-                // Запускаем обработку очереди в фоне
-                var processingTask = processor.StartProcessingAsync(cts.Token);
-
                 // Читаем и ставим в очередь
                 while (!cts.Token.IsCancellationRequested)
                 {
                     var msg = await portClient.ReadMessageAsync(cts.Token);
                     if (msg.HasValue)
-                        processor.Enqueue(msg.Value);
+                        await processor.EnqueueMessageAsync(msg.Value);
                 }
-
-                await processingTask;
+                await processor.StopAsync();
             }
             catch (OperationCanceledException)
             {

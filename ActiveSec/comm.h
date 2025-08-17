@@ -10,8 +10,8 @@ extern "C" {
 
 #pragma pack(push, 1)
     typedef struct _KM_MESSAGE {
+        UINT64 Pid;
         ULONG Type;
-        WCHAR ProccessPath[260];
         WCHAR FilePath[260];
         ULONG Offset;
         ULONG BufferLength;
@@ -19,7 +19,7 @@ extern "C" {
     } KM_MESSAGE, * PKM_MESSAGE;
 
     typedef struct _UM_MESSAGE {
-        WCHAR ProcessPath[260];
+        UINT64 Pid;
         ULONG Type;
     } UM_MESSAGE, * PUM_MESSAGE;
 #pragma pack(pop)

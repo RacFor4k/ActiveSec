@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -58,6 +59,10 @@ namespace UMAnalyzer.Services
         // Пример метода обработки одного сообщения
         private void HandleMessage(KM_Message message)
         {
+            using(var fs = File.AppendText("log.txt"))
+            {
+                fs.WriteLine(JsonSerializer.Serialize(message));
+            }
             // TODO: Реализовать логику обработки
             Console.WriteLine($"Обрабатываем сообщение: {message}");
         }
