@@ -12,7 +12,7 @@ namespace UMAnalyzer.Services
     internal class BlackList
     {
         private List<Threat> _ThreatList;
-        private List<Proccess> _ProccessList = new List<Proccess>();
+        private HashSet<Process> _ProcessesList = new HashSet<Process>();
         private void LoadThreats(string path)
         {
             foreach (var line in File.ReadLines(path))
@@ -39,6 +39,11 @@ namespace UMAnalyzer.Services
         {
             _ThreatList = new List<Threat>();
             LoadThreats(ConstProvider.ThreatsPath);
+        }
+
+        public Process? GetProcess(string ProcessPath)
+        {
+            return _ProcessesList.First(t => t.Equals(new Process(ProcessPath)));
         }
     }
 }

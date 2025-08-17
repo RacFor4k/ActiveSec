@@ -18,19 +18,19 @@ namespace UMAnalyzer.Models.Threads
          
     }
 
-    internal struct Proccess : IComparable<Proccess>, IEquatable<Proccess>
+    internal struct Process : IEquatable<Process>
     {
-        private ulong _pid;
+        private string _processPath;
         private double _distrust;
         public List<Action> Actions { get; }
-        public Proccess(ulong pid)
+        public Process(string _processPath)
         {
-            _pid = pid;
+            _processPath = _processPath;
             Actions = new List<Action>();
         }
-        public ulong GetPid()
+        public string GetProcessPath()
         {
-            return _pid;
+            return _processPath;
         }
         public void AddAction(Action action)
         {
@@ -41,13 +41,9 @@ namespace UMAnalyzer.Models.Threads
         {
             return _distrust;
         }
-        public int CompareTo(Proccess other)
+        public bool Equals(Process other)
         {
-            return _pid.CompareTo(other._pid);
-        }
-        public bool Equals(Proccess other)
-        {
-            return _pid.Equals(other._pid);
+            return _processPath.Equals(other._processPath);
         }
     }
 
