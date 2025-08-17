@@ -12,6 +12,6 @@ namespace UMAnalyzer.Common
     {
         public const string PortName = @"\ActiveSec";
         public const int MaxLogWriteBufferLen = 10 * 1024;
-
+        public const string ThreatsPath = @"threats.json";
     }
 }
