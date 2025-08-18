@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UMAnalyzer", "UMAnalyzer\UM
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FilterManager", "FilterManager\FilterManager.csproj", "{DEA8C17F-EB5D-45BE-8586-39239B2E96C0}"
 EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "CryptoAI", "CryptoAI\CryptoAI.pyproj", "{8120FEAD-A1EC-44D9-BE1A-90888488C675}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -61,6 +63,12 @@ Global
 		{DEA8C17F-EB5D-45BE-8586-39239B2E96C0}.Release|ARM64.Build.0 = Release|Any CPU
 		{DEA8C17F-EB5D-45BE-8586-39239B2E96C0}.Release|x64.ActiveCfg = Release|Any CPU
 		{DEA8C17F-EB5D-45BE-8586-39239B2E96C0}.Release|x64.Build.0 = Release|Any CPU
+		{8120FEAD-A1EC-44D9-BE1A-90888488C675}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8120FEAD-A1EC-44D9-BE1A-90888488C675}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{8120FEAD-A1EC-44D9-BE1A-90888488C675}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8120FEAD-A1EC-44D9-BE1A-90888488C675}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8120FEAD-A1EC-44D9-BE1A-90888488C675}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{8120FEAD-A1EC-44D9-BE1A-90888488C675}.Release|x64.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

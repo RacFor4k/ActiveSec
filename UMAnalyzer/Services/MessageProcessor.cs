@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Channels;
@@ -9,14 +10,59 @@ namespace UMAnalyzer.Services
 {
     public class MessageProcessor : IDisposable
     {
-        private readonly Channel<KM_Message> _channel;
+        private readonly Channel<safe_KM_Message> _channel;
         private readonly CancellationTokenSource _cts;
         private readonly Task _processingTask;
+        private readonly FileStream _logStream;
+
+        private static byte[] Serialize(safe_KM_Message msg)
+        {
+            using var ms = new MemoryStream();
+            using var bw = new BinaryWriter(ms, Encoding.Unicode, true);
+
+            // 1. Pid (8 байт)
+            bw.Write(msg.Pid);
+
+            // 2. Type (4 байта)
+            bw.Write(msg.Type);
+
+            // 3. FilePath (WCHAR[260], 520 байт)
+            var filePath = msg.FilePath ?? string.Empty;
+            if (filePath.Length > 259)
+                filePath = filePath.Substring(0, 259); // оставляем место для \0
+
+            // добавляем null-terminator
+            filePath += '\0';
+
+            // кодируем в UTF-16LE
+            var encoded = Encoding.Unicode.GetBytes(filePath);
+
+            // записываем и дополняем нулями до 520 байт
+            bw.Write(encoded);
+            if (encoded.Length < 520)
+                bw.Write(new byte[520 - encoded.Length]);
+
+            // 4. Offset (4 байта)
+            bw.Write(msg.Offset);
+
+            // 5. BufferLength (4 байта)
+            bw.Write(msg.BufferLength);
+
+            // 6. Buffer (ровно BufferLength байт)
+            if (msg.Buffer != null && msg.Buffer.Length > 0)
+            {
+                bw.Write(msg.Buffer, 0, (int)msg.BufferLength);
+            }
+
+            bw.Flush();
+            return ms.ToArray();
+        }
 
         public MessageProcessor()
         {
+            _logStream = File.OpenWrite("log.txt");
             // Канал с неограниченной емкостью
-            _channel = Channel.CreateUnbounded<KM_Message>(new UnboundedChannelOptions
+            _channel = Channel.CreateUnbounded<safe_KM_Message>(new UnboundedChannelOptions
             {
                 SingleReader = true,   // один поток обработки
                 SingleWriter = false   // несколько потоков могут писать
@@ -27,7 +73,7 @@ namespace UMAnalyzer.Services
         }
 
         // Метод для добавления сообщения в очередь
-        public async Task EnqueueMessageAsync(KM_Message message)
+        public async Task EnqueueMessageAsync(safe_KM_Message message)
         {
             await _channel.Writer.WriteAsync(message);
         }
@@ -57,14 +103,12 @@ namespace UMAnalyzer.Services
         }
 
         // Пример метода обработки одного сообщения
-        private void HandleMessage(KM_Message message)
+        private void HandleMessage(safe_KM_Message message)
         {
-            using(var fs = File.AppendText("log.txt"))
-            {
-                fs.WriteLine(JsonSerializer.Serialize(message));
-            }
+            _logStream.Write(Serialize(message));
+            _logStream.Flush();
             // TODO: Реализовать логику обработки
-            Console.WriteLine($"Обрабатываем сообщение: {message}");
+            Console.WriteLine($"Обрабатываем сообщение: {message.Buffer.Count()}");
         }
 
         // Остановка очереди и освобождение ресурсов
@@ -77,6 +121,7 @@ namespace UMAnalyzer.Services
 
         public void Dispose()
         {
+            _logStream.Dispose();
             _cts.Cancel();
             _channel.Writer.Complete();
             _processingTask.Wait();

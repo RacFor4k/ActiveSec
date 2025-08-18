@@ -38,7 +38,9 @@ namespace UMAnalyzer
                 {
                     var msg = await portClient.ReadMessageAsync(cts.Token);
                     if (msg.HasValue)
+                    {
                         await processor.EnqueueMessageAsync(msg.Value);
+                    }
                 }
                 await processor.StopAsync();
             }

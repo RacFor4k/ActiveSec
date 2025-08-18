@@ -5,7 +5,34 @@
 
 #include "callbacks.h"
 #include "worker.h"
-#include <ntifs.h>
+
+// Хелпер для сравнения NTUNICODESTRING с нашим путём
+BOOLEAN IsExcludedFile(_In_ PUNICODE_STRING FileName)
+{
+    if (!FileName || FileName->Length == 0)
+        return FALSE;
+
+    // Ищем последний backslash
+    USHORT i = FileName->Length / sizeof(WCHAR);
+    while (i > 0) {
+        if (FileName->Buffer[i - 1] == L'\\')
+            break;
+        i--;
+    }
+
+    // Теперь i указывает на начало имени файла
+    UNICODE_STRING fileNameOnly;
+    fileNameOnly.Buffer = &FileName->Buffer[i];
+    fileNameOnly.Length = FileName->Length - (i * sizeof(WCHAR));
+    fileNameOnly.MaximumLength = fileNameOnly.Length;
+
+    // С чем сравниваем
+    UNICODE_STRING excluded;
+    RtlInitUnicodeString(&excluded, L"log.txt");
+
+    return RtlEqualUnicodeString(&fileNameOnly, &excluded, TRUE);
+}
+
 
 FLT_PREOP_CALLBACK_STATUS
 PreCreateCallback(
@@ -18,6 +45,13 @@ PreCreateCallback(
     UNREFERENCED_PARAMETER(CompletionContext);
     if (CompletionContext)
         CompletionContext = nullptr;
+    
+    if (FltObjects->FileObject &&
+        IsExcludedFile(&FltObjects->FileObject->FileName))
+    {
+        // просто выходим, не создаём лог
+        return FLT_PREOP_SUCCESS_NO_CALLBACK;
+    }
 
     PKM_MESSAGE log = (PKM_MESSAGE)ExAllocatePool2(POOL_FLAG_NON_PAGED, sizeof(KM_MESSAGE), AS_TAG);
     if (!log) {
@@ -52,6 +86,13 @@ PostReadCallback(
 {
     UNREFERENCED_PARAMETER(Flags);
     UNREFERENCED_PARAMETER(CompletionContext);
+
+    if (FltObjects->FileObject &&
+        IsExcludedFile(&FltObjects->FileObject->FileName))
+    {
+        // просто выходим, не создаём лог
+        return FLT_POSTOP_FINISHED_PROCESSING;
+    }
 
     PKM_MESSAGE log = (PKM_MESSAGE)ExAllocatePool2(POOL_FLAG_NON_PAGED, sizeof(KM_MESSAGE), AS_TAG);
     if (!log) {
@@ -114,6 +155,13 @@ PreWriteCallback(
     UNREFERENCED_PARAMETER(CompletionContext);
     if (CompletionContext)
         CompletionContext = nullptr;
+
+    if (FltObjects->FileObject &&
+        IsExcludedFile(&FltObjects->FileObject->FileName))
+    {
+        // просто выходим, не создаём лог
+        return FLT_PREOP_SUCCESS_NO_CALLBACK;
+    }
 
     PKM_MESSAGE log = (PKM_MESSAGE)ExAllocatePool2(POOL_FLAG_NON_PAGED, sizeof(KM_MESSAGE), AS_TAG);
     if (!log) {

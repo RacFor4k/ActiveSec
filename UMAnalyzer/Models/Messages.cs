@@ -32,6 +32,16 @@ namespace UMAnalyzer.Models
         public fixed byte Buffer[ConstProvider.MaxLogWriteBufferLen]; // inline CHAR[]
     }
 
+    public struct safe_KM_Message
+    {
+        public ulong Pid;
+        public uint Type;
+        public string FilePath;
+        public uint Offset;
+        public uint BufferLength;
+        public byte[] Buffer;
+    }
+
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct UM_Message
     {
