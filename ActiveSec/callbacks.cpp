@@ -170,7 +170,7 @@ PreWriteCallback(
     }
     RtlIsZeroMemory(log, sizeof(KM_MESSAGE));
     log->Pid = (UINT64)PsGetCurrentProcessId();
-    log->Type = 1; // read
+    log->Type = 2; // read
 
     // Τΰιλ
     if (FltObjects->FileObject && FltObjects->FileObject->FileName.Length < sizeof(log->FilePath)) {

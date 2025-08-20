@@ -398,3 +398,9 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# PyVenv
+CryptoEnv/
+
+# Debug
+*.bin
