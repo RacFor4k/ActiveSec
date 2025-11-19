@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<UseWPF>False</UseWPF>
+		<Nullable>enable</Nullable>
+		<UseWindowsForms>True</UseWindowsForms>
+		<ApplicationManifest>app1.manifest</ApplicationManifest>
+	</PropertyGroup>
+	<ItemGroup>
+	  <None Remove="app.manifest" />
+	</ItemGroup>
+</Project>
