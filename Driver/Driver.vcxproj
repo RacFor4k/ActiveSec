@@ -88,7 +88,7 @@
       <FileDigestAlgorithm>sha256</FileDigestAlgorithm>
     </DriverSign>
     <Link>
-      <AdditionalDependencies>FltMgr.lib;Bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>FltMgr.lib;cng.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>C:\Program Files (x86)\Windows Kits\10\Lib\10.0.26100.0\km\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -108,19 +108,21 @@
     </DriverSign>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Inf Include="Driver.inf" />
+    <Inf Include="ActiveSec.inf" />
   </ItemGroup>
   <ItemGroup>
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Callbacks.cpp" />
-    <ClCompile Include="Driver.cpp" />
+    <ClCompile Include="Callbacks.c" />
+    <ClCompile Include="Communication.c" />
+    <ClCompile Include="CryptoUtils.c" />
+    <ClCompile Include="Driver.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Callbacks.h" />
     <ClInclude Include="Communication.h" />
-    <ClInclude Include="CryptoUtils.hpp" />
+    <ClInclude Include="CryptoUtils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

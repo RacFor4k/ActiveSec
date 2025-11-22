@@ -4,16 +4,22 @@
 
 [Version]
 Signature   = "$WINDOWS NT$"
-Class       = "ActivityMonitor" ; TODO: specify appropriate Class
-ClassGuid   = {b86dff51-a31e-4bac-b3cf-e8cfe75c9fc2} ; TODO: specify appropriate ClassGuid
+Class       = "ActivityMonitor"
+ClassGuid   = {b86dff51-a31e-4bac-b3cf-e8cfe75c9fc2}
 Provider    = %ProviderString%
 CatalogFile = ActiveSec.cat
-DriverVer   = 01/03/2005,1.0.0.0 ; TODO: set DriverVer in stampinf property pages
+DriverVer   = 01/03/2005,1.0.0.0
 PnpLockdown = 1
 
 [DestinationDirs]
 DefaultDestDir = 12
 ActiveSec.DriverFiles = 12
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+ActiveSec.sys = 1,,
 
 [DefaultInstall.NTamd64]
 OptionDesc = %ServiceDescription%
@@ -23,18 +29,19 @@ CopyFiles = ActiveSec.DriverFiles
 AddService = %ServiceName%,,ActiveSec.Service
 
 [DefaultUninstall.NTamd64]
+LegacyUninstall = 1
 DelFiles = ActiveSec.DriverFiles 
 
 [DefaultUninstall.NTamd64.Services]
 DelService = %ServiceName%,0x200
 
 [ActiveSec.Service]
-DisplayName = %ServiceName%
-Description = %ServiceDescription%
+DisplayName      = %ServiceName%
+Description      = %ServiceDescription%
 ServiceBinary    = %12%\ActiveSec.sys
 Dependencies     = "FltMgr"
 ServiceType      = 2
-StartType        = 3 ;2
+StartType        = 3
 ErrorControl     = 1
 LoadOrderGroup   = "FSFilter Activity Monitor"
 AddReg           = ActiveSec.AddRegistry
@@ -43,17 +50,19 @@ AddReg           = ActiveSec.AddRegistry
 HKR,,"DebugFlags",0x00010001 ,0x0
 HKR,,"SupportedFeatures",0x00010001,0x3
 HKR,"Instances","DefaultInstance",0x00000000,%DefaultInstance%
-HKR,"Instances\"%Instance1.Name%,"Altitude",0x00000000,%Instance1.Altitude%
-HKR,"Instances\"%Instance1.Name%,"Flags",0x00010001,%Instance1.Flags%
+
+HKR,"Instances\%Instance1.Name%","Altitude",0x00000000,%Instance1.Altitude%
+HKR,"Instances\%Instance1.Name%","Flags",0x00010001,%Instance1.Flags%
 
 [ActiveSec.DriverFiles]
 ActiveSec.sys
 
 [Strings]
-ProviderString          = "ActiveSec ink."
+DiskName                = "ActiveSec Installation Disk"
+ProviderString          = "ActiveSec Inc."
 ServiceDescription      = "Driver for ActiveSec antivirus"
 ServiceName             = "ActiveSec"
 DefaultInstance         = "ActiveSec Instance"
 Instance1.Name          = "ActiveSec Instance"
 Instance1.Flags         = 0x0
-Instance1.Altitude		= "370030"
+Instance1.Altitude      = "370030"
