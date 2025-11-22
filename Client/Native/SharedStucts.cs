@@ -24,10 +24,17 @@ namespace Client.Native
         public uint CurrentOffset;
     }
 
+    public enum CmdType : uint
+    {
+        CmdType_Authorize = 1,
+        CmdType_GetKey = 2,
+        CmdType_SignalAck = 3
+    }
+
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct USER_MSG_HEADER
     {
-        public uint Command; // 1 - SignalAct
+        public CmdType Command; // 1 - SignalAct
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]

@@ -18,9 +18,8 @@ namespace Client.Security
             return ((value >> bitIndex) & 1) != 0;
         }
 
-        public static uint ApplySalt(byte[] data)
+        public static void ApplySalt(byte[] data)
         {
-            uint salt = (uint)_random.Next();
             for (int i = 0; i < data.Length; i++)
             {
                 if (GetBit(SaltMask, i % 32))
@@ -28,7 +27,6 @@ namespace Client.Security
                     data[i] = (byte)_random.Next(256);
                 }
             }
-            return salt;
         }
 
         //AES256 ECB Encryption

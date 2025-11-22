@@ -15,7 +15,8 @@ typedef enum _CTX_MSG_TYPE {
 // Типы сообщений от UM -> Driver
 typedef enum _CTX_CMD_TYPE {
 	CmdType_Authorize = 1,     // Установка ключа шифрования
-    CmdType_SignalAck = 2   // Сигнал: "Я прочитал Shared Memory, давай дальше"
+	CmdType_GetKey = 2,       // Запрос ключа шифрования
+    CmdType_SignalAck = 3   // Сигнал: "Я прочитал Shared Memory, давай дальше"
 } CTX_CMD_TYPE;
 
 // Структура ключа (как в задании)
