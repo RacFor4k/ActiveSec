@@ -9,7 +9,6 @@ FLT_PREOP_CALLBACK_STATUS PreCreateCallback(
 	UNREFERENCED_PARAMETER(Data);
 	UNREFERENCED_PARAMETER(FltObjects);
 	UNREFERENCED_PARAMETER(CompletionContext);
-	KdPrint(("PreCreateCallback called\n"));
 	return FLT_PREOP_SUCCESS_NO_CALLBACK;
 }
 

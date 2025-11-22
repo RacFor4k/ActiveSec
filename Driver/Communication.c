@@ -46,6 +46,7 @@ NTSTATUS Communication_Init(PFLT_FILTER Filter) {
     UNICODE_STRING portName;
     UNICODE_STRING sectionName;
     LARGE_INTEGER sectionSize;
+	SIZE_T viewSize = 0;
 
     g_Ctx.Filter = Filter;
     KeInitializeSpinLock(&g_Ctx.QueueLock);
@@ -79,7 +80,6 @@ NTSTATUS Communication_Init(PFLT_FILTER Filter) {
 	RtlInitUnicodeString(&sectionName, SHARED_SECTION_NAME);
 	sectionSize.QuadPart = SHARED_MEM_SIZE;
 	InitializeObjectAttributes(&oa, &sectionName, OBJ_KERNEL_HANDLE | OBJ_CASE_INSENSITIVE, NULL, sd);
-    FltFreeSecurityDescriptor(sd);
 	status = ZwCreateSection(
 		&g_Ctx.SectionHandle,
 		SECTION_ALL_ACCESS,
@@ -89,9 +89,33 @@ NTSTATUS Communication_Init(PFLT_FILTER Filter) {
 		SEC_COMMIT,
 		NULL
 	);
+    FltFreeSecurityDescriptor(sd);
 	if (!NT_SUCCESS(status)) {
 		ZwClose(g_Ctx.SectionHandle);
 		FltCloseCommunicationPort(g_Ctx.ServerPort);
+		return status;
+	}
+
+	viewSize = SHARED_MEM_SIZE;
+	g_Ctx.SharedMemoryBase = NULL;
+	status = ZwMapViewOfSection(
+		g_Ctx.SectionHandle,
+		ZwCurrentProcess(),
+		&g_Ctx.SharedMemoryBase,
+		0,
+		SHARED_MEM_SIZE,
+		NULL,
+		&viewSize,
+		ViewUnmap,
+		0,
+		PAGE_READWRITE
+	);
+
+	if (!NT_SUCCESS(status)) {
+		ZwClose(g_Ctx.SectionHandle);
+		g_Ctx.SectionHandle = NULL;
+		FltCloseCommunicationPort(g_Ctx.ServerPort);
+		g_Ctx.ServerPort = NULL;
 		return status;
 	}
 
@@ -112,8 +136,12 @@ NTSTATUS Communication_Init(PFLT_FILTER Filter) {
 	else {
 		// Очистка при ошибке...
 		ZwUnmapViewOfSection(ZwCurrentProcess(), g_Ctx.SharedMemoryBase);
+		g_Ctx.SharedMemoryBase = NULL;
 		ZwClose(g_Ctx.SectionHandle);
+		g_Ctx.SectionHandle = NULL;
 		FltCloseCommunicationPort(g_Ctx.ServerPort);
+		g_Ctx.ServerPort = NULL;
+		return status;
 	}
 	return status;
 }
@@ -174,6 +202,7 @@ NTSTATUS Communication_QueueBigData(PVOID Buffer, ULONG Length) {
 	KeReleaseSpinLock(&g_Ctx.QueueLock, irql);
 
 	KeSetEvent(&g_Ctx.WorkerWakeEvent, 0, FALSE);
+	KdPrint(("Communication_QueueBigData: Queued %u bytes for sending\n", Length));
 	return STATUS_SUCCESS;
 }
 
@@ -303,12 +332,14 @@ NTSTATUS ConnectNotify(PFLT_PORT ClientPort, PVOID ServerPortCookie, PVOID Conte
 
 	PCONNECTION_CONTEXT connCtx = ExAllocatePool2(POOL_FLAG_NON_PAGED, sizeof(CONNECTION_CONTEXT), 'cCtx');
 	if (!connCtx) {
+		KdPrint(("ConnectNotify: Failed to allocate connection context\n"));
 		return STATUS_INSUFFICIENT_RESOURCES;
 	}
 	RtlZeroMemory(connCtx->Key, KEY_LENGTH);
 	connCtx->ClientPort = ClientPort;
 
 	*ConnectionCookie = connCtx;
+	KdPrint(("ConnectNotify: Client connected\n"));
 	return STATUS_SUCCESS;
 }
 
@@ -323,6 +354,7 @@ VOID DisconnectNotify(PVOID ConnectionCookie) {
 		g_Ctx.ClientPort = NULL;
 	}
 	KeSetEvent(&g_Ctx.WorkerWakeEvent, 0, FALSE);
+	KdPrint(("DisconnectNotify: Client disconnected\n"));
 }
 
 NTSTATUS MessageNotify(PVOID PortCookie, PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, PULONG ReturnOutputBufferLength) {
@@ -331,40 +363,59 @@ NTSTATUS MessageNotify(PVOID PortCookie, PVOID InputBuffer, ULONG InputBufferLen
 	UNREFERENCED_PARAMETER(ReturnOutputBufferLength);
 	PCONNECTION_CONTEXT connCtx = (PCONNECTION_CONTEXT)PortCookie;
 
-	if (InputBuffer == NULL || InputBufferLength < sizeof(USER_MSG_HEADER))
+	if (InputBuffer == NULL || InputBufferLength < sizeof(USER_MSG_HEADER)) {
+		KdPrint(("MessageNotify: Invalid input buffer\n"));
 		return STATUS_INVALID_PARAMETER;
+	}
 	NTSTATUS status;
 	PUSER_MSG_HEADER userHeader = (PUSER_MSG_HEADER)InputBuffer;
 	switch (userHeader->Command) {
 	case CmdType_GetKey:
-		if (g_Ctx.ClientPort) return STATUS_ACCESS_DENIED; // Уже аутентифицирован
-		if (OutputBufferLength < KEY_LENGTH || OutputBuffer == NULL)
+		if (g_Ctx.ClientPort) {
+			KdPrint(("MessageNotify: Already authorized client tried to get key\n"));
+			return STATUS_ACCESS_DENIED; // Уже аутентифицирован
+		}
+		if (OutputBufferLength < KEY_LENGTH || OutputBuffer == NULL) {
+			KdPrint(("MessageNotify: Output buffer too small for key\n"));
 			return STATUS_BUFFER_TOO_SMALL;
+		}
 		UCHAR key[KEY_LENGTH];
 		status = CUGenerateRandomBytes(key);
 		if (!NT_SUCCESS(status)) return status;
 		RtlCopyMemory(connCtx->Key, key, KEY_LENGTH);
 		RtlCopyMemory(OutputBuffer, key, KEY_LENGTH);
 		*ReturnOutputBufferLength = KEY_LENGTH;
+		KdPrint(("MessageNotify: Provided encryption key to client\n"));
 		return STATUS_SUCCESS;
 	case CmdType_Authorize:
-		if (!connCtx) return STATUS_INVALID_PARAMETER;
-		if (g_Ctx.ClientPort) return STATUS_ACCESS_DENIED; // Уже аутентифицирован
-		if (InputBufferLength < sizeof(USER_MESSAGE))
+		if (!connCtx) {
+			KdPrint(("MessageNotify: No connection context in authorize\n"));
 			return STATUS_INVALID_PARAMETER;
+		}
+		if (g_Ctx.ClientPort) {
+			KdPrint(("MessageNotify: Client already authorized\n"));
+			return STATUS_ACCESS_DENIED; // Уже аутентифицирован
+		}
+		if (InputBufferLength < sizeof(USER_MESSAGE)) {
+			KdPrint(("MessageNotify: Input buffer too small for authorize message\n"));
+			return STATUS_INVALID_PARAMETER;
+		}
 		PUSER_MESSAGE userMsg = (PUSER_MESSAGE)InputBuffer;
 		UCHAR recievedToken[KEY_LENGTH];
 		UCHAR Token[KEY_LENGTH];
 		RtlCopyMemory(recievedToken, userMsg->Data.KeyMsg.Key, KEY_LENGTH);
 		CUDecryptAES256(connCtx->Key, recievedToken, Token);
 		if (!CUCompareWithSaltMask(connCtx->Key, Token, 0xC0000003)) {
+			KdPrint(("MessageNotify: Authorization failed, invalid token\n"));
 			return STATUS_ACCESS_DENIED;
 		}
 		g_Ctx.ClientPort = connCtx->ClientPort;
+		KdPrint(("MessageNotify: Client authorized successfully\n"));
 		return STATUS_SUCCESS;
 
 	case CmdType_SignalAck:
 		KeSetEvent(&g_Ctx.UmAckEvent, 0, FALSE);
+		KdPrint(("MessageNotify: Received Ack from client\n"));
 		break;
 	default:
 		return STATUS_INVALID_PARAMETER;
