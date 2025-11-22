@@ -12,6 +12,7 @@ typedef struct _COMM_CONTEXT {
     PFLT_FILTER Filter;
     PFLT_PORT ServerPort;
     PFLT_PORT ClientPort;
+	BOOLEAN IsAuthenticated;
 
     // Shared Memory
     HANDLE SectionHandle;
@@ -291,50 +292,55 @@ NTSTATUS ConnectNotify(PFLT_PORT ClientPort, PVOID ServerPortCookie, PVOID Conte
 	UNREFERENCED_PARAMETER(ServerPortCookie);
 	UNREFERENCED_PARAMETER(Context);
 	UNREFERENCED_PARAMETER(Size);
-	NTSTATUS status;
-	UCHAR key[32];
-	PFLT_PORT clientPortTemp = NULL;
 
 	if (g_Ctx.ClientPort) {
-		// Уже есть клиент, не разрешаем второе подключение
 		return STATUS_TOO_MANY_SESSIONS;
 	}
+
+	// Сохраняем порт, но помечаем как недоверенный
+	g_Ctx.ClientPort = ClientPort;
+	g_Ctx.IsAuthenticated = FALSE;
+	*ConnectionCookie = NULL;
+
+	return STATUS_SUCCESS;
+}
+
+NTSTATUS PerformAuthHandshake() {
+	NTSTATUS status;
+	UCHAR key[KEY_LENGTH];
+	UCHAR responseToken[KEY_LENGTH];
+	ULONG replyLength = KEY_LENGTH;
+	LARGE_INTEGER timeout;
+
+	// Генерируем Challenge
 	CUGenerateRandomBytes(key);
 
-	clientPortTemp = ClientPort;
+	timeout.QuadPart = -30 * 1000 * 1000; // 3 сек, даем юзеру время на вычисления
 
-	ULONG replyLength = KEY_LENGTH;
-	UCHAR responseToken[KEY_LENGTH];
-
-	LARGE_INTEGER timeout;
-	timeout.QuadPart = -10 * 1000 * 1000; // 1000 ms
-
+	// Шлем Challenge и ждем ответ
 	status = FltSendMessage(
 		g_Ctx.Filter,
-		&clientPortTemp,
-		key, // Буфер для отправки (Challenge)
+		&g_Ctx.ClientPort,
+		key,            // Challenge
 		KEY_LENGTH,
-		responseToken, // Буфер для приема ответа (Response Token)
+		responseToken,  // Ждем зашифрованный ответ
 		&replyLength,
 		&timeout
 	);
 
 	if (!NT_SUCCESS(status) || replyLength != KEY_LENGTH) {
-		ExFreePool(key);
 		return STATUS_ACCESS_DENIED;
 	}
 
+	// Проверяем
 	UCHAR token[KEY_LENGTH];
 	CUDecryptAES256(key, responseToken, token);
 
 	if (!CUCompareWithSaltMask(key, token, 0xC0000003)) {
-		ExFreePool(key);
 		return STATUS_ACCESS_DENIED;
 	}
 
-	g_Ctx.ClientPort = clientPortTemp;
-	ExFreePool(key);
-	*ConnectionCookie = NULL;
+	g_Ctx.IsAuthenticated = TRUE;
 	return STATUS_SUCCESS;
 }
 
@@ -357,6 +363,17 @@ NTSTATUS MessageNotify(PVOID PortCookie, PVOID InputBuffer, ULONG InputBufferLen
 
 	PUSER_MSG_HEADER userHeader = (PUSER_MSG_HEADER)InputBuffer;
 	switch (userHeader->Command) {
+	case CmdType_Authorize:
+		if (g_Ctx.IsAuthenticated) {
+			return STATUS_ACCESS_DENIED; // Уже аутентифицирован
+		}
+		NTSTATUS status = PerformAuthHandshake();
+		if (!NT_SUCCESS(status)) {
+			FltCloseClientPort(g_Ctx.Filter, &g_Ctx.ClientPort);
+			g_Ctx.ClientPort = NULL;
+			return STATUS_ACCESS_DENIED;
+		}
+		return STATUS_SUCCESS;
 	case CmdType_SignalAck:
 		KeSetEvent(&g_Ctx.UmAckEvent, 0, FALSE);
 		break;

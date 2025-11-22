@@ -14,13 +14,15 @@ typedef enum _CTX_MSG_TYPE {
 
 // Типы сообщений от UM -> Driver
 typedef enum _CTX_CMD_TYPE {
-    CmdType_SignalAck = 1   // Сигнал: "Я прочитал Shared Memory, давай дальше"
+	CmdType_Authorize = 1,     // Установка ключа шифрования
+    CmdType_SignalAck = 2   // Сигнал: "Я прочитал Shared Memory, давай дальше"
 } CTX_CMD_TYPE;
 
 // Структура ключа (как в задании)
-typedef struct _KEY_MSG {
+typedef struct _TOKEN_MSG {
+    CTX_CMD_TYPE Command;
     unsigned char Key[32];
-} KEY_MSG, * PKEY_MSG;
+} TOKEN_MSG, * PTOKEN_MSG;
 
 // Заголовок сообщения от Драйвера к UM
 typedef struct _DRIVER_MSG_HEADER {
@@ -32,14 +34,14 @@ typedef struct _DRIVER_MSG_HEADER {
 
 // Заголовок сообщения от UM к Драйверу
 typedef struct _USER_MSG_HEADER {
-    CTX_CMD_TYPE Command;
+	CTX_CMD_TYPE Command; // 1 - Authorize, 2 - SignalAck
 } USER_MSG_HEADER, * PUSER_MSG_HEADER;
 
 // Полное сообщение от UM (входной буфер FilterSendMessage)
 typedef struct _USER_MESSAGE {
     USER_MSG_HEADER Header;
     union {
-        KEY_MSG KeyMsg; // Заполняется если Command == CmdType_SetKey
+        TOKEN_MSG KeyMsg; // Заполняется если Command == CmdType_SetKey
         // Для CmdType_SignalAck данные не нужны
     } Data;
 } USER_MESSAGE, * PUSER_MESSAGE;
@@ -59,3 +61,4 @@ NTSTATUS Communication_SendMessage(PUNICODE_STRING Message);
 // Функция для отправки больших данных (вид 2 + Shared Memory)
 // Эта функция не блокирует поток фильтра, она ставит задачу в очередь.
 NTSTATUS Communication_QueueBigData(PVOID Buffer, ULONG Length);
+ 
