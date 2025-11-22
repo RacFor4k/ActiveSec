@@ -6,7 +6,7 @@
 Signature   = "$WINDOWS NT$"
 Class       = "ActivityMonitor" ; TODO: specify appropriate Class
 ClassGuid   = {b86dff51-a31e-4bac-b3cf-e8cfe75c9fc2} ; TODO: specify appropriate ClassGuid
-Provider    = %ManufacturerName%
+Provider    = %ProviderString%
 CatalogFile = ActiveSec.cat
 DriverVer   = 01/03/2005,1.0.0.0 ; TODO: set DriverVer in stampinf property pages
 PnpLockdown = 1
@@ -54,6 +54,6 @@ ProviderString          = "ActiveSec ink."
 ServiceDescription      = "Driver for ActiveSec antivirus"
 ServiceName             = "ActiveSec"
 DefaultInstance         = "ActiveSec Instance"
-Instance1.Name          = "MyDriver Instance"
+Instance1.Name          = "ActiveSec Instance"
 Instance1.Flags         = 0x0
 Instance1.Altitude		= "370030"
