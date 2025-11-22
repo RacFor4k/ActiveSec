@@ -1,0 +1,108 @@
+;
+; Driver.inf
+;
+
+[Version]
+Signature   = "$WINDOWS NT$"
+Class       = "ActivityMonitor" ; TODO: specify appropriate Class
+ClassGuid   = {b86dff51-a31e-4bac-b3cf-e8cfe75c9fc2} ; TODO: specify appropriate ClassGuid
+Provider    = %ManufacturerName%
+CatalogFile = ActiveSec.cat
+DriverVer   = 01/03/2005,1.0.0.0 ; TODO: set DriverVer in stampinf property pages
+PnpLockdown = 1
+
+[DestinationDirs]
+DefaultDestDir = 12
+ActiveSec.DriverFiles = 12
+
+[DefaultInstall.NTamd64]
+OptionDesc = %ServiceDescription%
+CopyFiles = ActiveSec.DriverFiles
+
+[DefaultInstall.NTamd64.Services]
+AddService = %ServiceName%,,ActiveSec.Service
+
+[DefaultUninstall.NTamd64]
+DelFiles = ActiveSec.DriverFiles 
+
+[DefaultUninstall.NTamd64.Services]
+DelService = %ServiceName%,0x200
+
+[ActiveSec.Service]
+DisplayName = %ServiceName%
+Description = %ServiceDescription%
+ServiceBinary    = %12%\ActiveSec.sys
+Dependencies     = "FltMgr"
+ServiceType      = 2
+StartType        = 3 ;2
+ErrorControl     = 1
+LoadOrderGroup   = "FSFilter Activity Monitor"
+AddReg           = ActiveSec.AddRegistry
+
+[ActiveSec.AddRegistry]
+HKR,,"DebugFlags",0x00010001 ,0x0
+HKR,,"SupportedFeatures",0x00010001,0x3
+HKR,"Instances","DefaultInstance",0x00000000,%DefaultInstance%
+HKR,"Instances\"%Instance1.Name%,"Altitude",0x00000000,%Instance1.Altitude%
+HKR,"Instances\"%Instance1.Name%,"Flags",0x00010001,%Instance1.Flags%
+
+[ActiveSec.DriverFiles]
+ActiveSec.sys
+
+[Strings]
+ProviderString          = "ActiveSec ink."
+ServiceDescription      = "Driver for ActiveSec antivirus"
+ServiceName             = "ActiveSec"
+DefaultInstance         = "ActiveSec Instance"
+Instance1.Name          = "MyDriver Instance"
+Instance1.Flags         = 0x0
+Instance1.Altitude		= "370030"
+
+  
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+Driver.sys = 1,,
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName% = Standard,NT$ARCH$.10.0...16299 ; %13% support introduced in build 16299
+
+[Standard.NT$ARCH$.10.0...16299]
+%Driver.DeviceDesc% = Driver_Device, Root\Driver ; TODO: edit hw-id
+
+[Driver_Device.NT]
+CopyFiles = File_Copy
+
+[File_Copy]
+Driver.sys
+
+;-------------- Service installation
+[Driver_Device.NT.Services]
+AddService = Driver,%SPSVCINST_ASSOCSERVICE%, Driver_Service_Inst
+
+; -------------- Driver driver install sections
+[Driver_Service_Inst]
+DisplayName    = %Driver.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %13%\Driver.sys
+
+[Driver_Device.NT.Wdf]
+KmdfService = Driver, Driver_wdfsect
+
+[Driver_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE = 0x00000002
+ManufacturerName = "<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+DiskName = "Driver Installation Disk"
+Driver.DeviceDesc = "Driver Device"
+Driver.SVCDESC = "Driver Service"
