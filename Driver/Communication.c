@@ -64,8 +64,8 @@ NTSTATUS Communication_Init(PFLT_FILTER Filter) {
 		MessageNotify,
 		1
 	);
-
-	if (!NT_SUCCES(status)) {
+	
+	if (!NT_SUCCESS(status)) {
 		FltCloseCommunicationPort(g_Ctx.ServerPort);
 		return status;
 	}
@@ -84,7 +84,7 @@ NTSTATUS Communication_Init(PFLT_FILTER Filter) {
 		SEC_COMMIT,
 		NULL
 	);
-	if (!NT_SUCCES(status)) {
+	if (!NT_SUCCESS(status)) {
 		ZwClose(g_Ctx.SectionHandle);
 		FltCloseCommunicationPort(g_Ctx.ServerPort);
 		return status;
@@ -347,10 +347,11 @@ VOID DisconnectNotify(PVOID ConnectionCookie) {
 	KeSetEvent(&g_Ctx.WorkerWakeEvent, 0, FALSE);
 }
 
-NTSTATUS MessageNotify(PVOID PortCookie, PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength) {
+NTSTATUS MessageNotify(PVOID PortCookie, PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, PULONG ReturnOutputBufferLength) {
 	UNREFERENCED_PARAMETER(PortCookie);
 	UNREFERENCED_PARAMETER(OutputBuffer);
 	UNREFERENCED_PARAMETER(OutputBufferLength);
+	UNREFERENCED_PARAMETER(ReturnOutputBufferLength);
 	if (InputBuffer == NULL || InputBufferLength < sizeof(USER_MSG_HEADER))
 		return STATUS_INVALID_PARAMETER;
 

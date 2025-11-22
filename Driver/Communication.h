@@ -48,18 +48,14 @@ typedef struct _USER_MESSAGE {
 // Communication
 //
 
-NTSTATUS ActiveComm_Init(PFLT_FILTER Filter);
+NTSTATUS Communication_Init(PFLT_FILTER Filter);
 
 // Очистка ресурсов (при выгрузке драйвера)
-VOID ActiveComm_Shutdown();
+VOID Communication_Shutdown();
 
 // Функция для отправки простого сообщения (вид 1)
-NTSTATUS ActiveComm_SendLogMessage(PUNICODE_STRING Message);
+NTSTATUS Communication_SendMessage(PUNICODE_STRING Message);
 
 // Функция для отправки больших данных (вид 2 + Shared Memory)
 // Эта функция не блокирует поток фильтра, она ставит задачу в очередь.
-NTSTATUS ActiveComm_QueueBigData(PVOID Buffer, ULONG Length);
-
-//
-//
-//
+NTSTATUS Communication_QueueBigData(PVOID Buffer, ULONG Length);
