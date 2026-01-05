@@ -399,5 +399,6 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
-# Data folder from train directory
-AS-NET/train/data/
+# Data folder from train directory - excluding only specific subdirectories
+AS-NET/train/data/markup/
+AS-NET/train/data/raw/
