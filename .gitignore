@@ -400,5 +400,9 @@ FodyWeavers.xsd
 *.sln.iml
 
 # Data folder from train directory - excluding only specific subdirectories
-AS-NET/train/data/markup/
-AS-NET/train/data/raw/
+AS-NET/train/data/
+!AS-NET/train/data/prepare.py
+AS-NET/checkpoints
+
+#qwen data
+QWEN.md
