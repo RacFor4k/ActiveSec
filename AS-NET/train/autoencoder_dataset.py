@@ -45,9 +45,9 @@ class AutoencoderDataset(Dataset):
         """
         Возвращает количество элементов в датасете
         """
-        return len(self.labels)
+        return len(self.labels)//60
 
-    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
+    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Возвращает элемент датасета по индексу
 
@@ -55,8 +55,10 @@ class AutoencoderDataset(Dataset):
             idx: индекс элемента
 
         Returns:
-            кортеж (поврежденные_данные, оригинальные_данные)
+            кортеж (поврежденные_данные, оригинальные_данные, маска_повреждений)
+            где маска_повреждений[i] = True, если позиция i была затёрта
         """
+        idx*=2
         file_path = self.labels[idx]
 
         # Чтение бинарного файла
@@ -70,19 +72,22 @@ class AutoencoderDataset(Dataset):
         # Применяем срез данных
         original_data = original_data[self.start_index:self.start_index + self.max_data_len]
 
-        # Создаем поврежденную версию данных (удаляем 10% байтов, заменяя их на 0)
+        # Создаем поврежденную версию данных и маску
         corrupted_data = original_data.clone()
+        mask = torch.zeros_like(original_data, dtype=torch.bool)  # Маска повреждений
         
         # Определяем индексы, которые будем "удалять"
-        mask = (torch.rand(corrupted_data.size(0)) > self.corruption_ratio)
-        # Заменяем выбранные байты на 0
-        corrupted_data *= mask
+        num_corrupt = int(self.corruption_ratio * len(original_data))
+        if num_corrupt > 0:
+            corrupt_indices = torch.randperm(len(original_data))[:num_corrupt]
+            corrupted_data[corrupt_indices] = 0  # Заменяем выбранные байты на 0
+            mask[corrupt_indices] = True       # Отмечаем их в маске
 
         # Применение трансформаций, если они заданы
         if self.transform:
             corrupted_data = self.transform(corrupted_data)
 
-        return corrupted_data, original_data
+        return corrupted_data, original_data, mask
 
 
 # Пример использования
@@ -97,10 +102,14 @@ if __name__ == "__main__":
 
     # Пример получения первого элемента
     if len(dataset) > 0:
-        corrupted, original = dataset[0]
+        corrupted, original, mask = dataset[0]
         print(f"Размер поврежденных данных: {corrupted.shape}")
         print(f"Размер оригинальных данных: {original.shape}")
+        print(f"Размер маски: {mask.shape}")
         
         # Подсчитываем количество измененных байтов
         diff_count = torch.sum(corrupted != original).item()
+        mask_count = mask.sum().item()
         print(f"Количество измененных байтов: {diff_count}")
+        print(f"Количество поврежденных позиций (по маске): {mask_count}")
+        assert diff_count == mask_count, "Несоответствие между изменениями и маской!"

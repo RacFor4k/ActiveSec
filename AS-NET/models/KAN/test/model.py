@@ -1,4 +1,4 @@
-import torchKAN as KAN
+import models.KAN.torchKAN as KAN
 from tqdm import tqdm 
 import torch
 import torch.nn as nn

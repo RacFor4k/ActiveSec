@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import models.KAN.test.torchKAN as KAN
+import models.KAN.torchKAN as KAN
 
 class ExtrasToFeaturesFC(nn.Module):
     """
